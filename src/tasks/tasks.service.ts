@@ -15,14 +15,6 @@ export class TasksService {
     ) { }
 
     /**
-     * Returns all tasks
-     * @returns Promise<Task> tasks
-     */
-    public async getAllTasks(): Promise<Task[]> | null {
-        return await this.taskRepository.find();
-    }
-
-    /**
      * 
      * @param id string
      * @returns Promise<Task> | null
@@ -40,15 +32,8 @@ export class TasksService {
     /**
      * getTasksWithFilter
      */
-    public async getTasksWithFilter(filterDTO: GetTasksFilterDTO): Promise<Task[]> {
-        const { status, search } = filterDTO;
-        return await this.taskRepository.find({
-            where: [
-                { status: status },
-                { title: Like(`%${search}%`) },
-                { description: Like(`%${search}%`) },
-            ]
-        });
+    public async getTasks(filterDTO: GetTasksFilterDTO): Promise<Task[]> {
+        return this.taskRepository.getTasks(filterDTO);
     }
 
     /**

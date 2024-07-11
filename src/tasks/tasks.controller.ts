@@ -18,10 +18,7 @@ export class TasksController {
      */
     @Get()
     public getTasks(@Query() filterDTO: GetTasksFilterDTO): Promise<Task[]> {
-        if (Object.keys(filterDTO).length) {
-            return this.tasksService.getTasksWithFilter(filterDTO);
-        }
-        return this.tasksService.getAllTasks();
+        return this.tasksService.getTasks(filterDTO);
     }
 
     /**
