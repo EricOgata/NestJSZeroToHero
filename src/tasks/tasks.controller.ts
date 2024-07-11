@@ -1,9 +1,9 @@
 import { Body, Controller, Delete, Get, HttpCode, NotFoundException, Param, Patch, Post, Query } from '@nestjs/common';
 import { TasksService } from './tasks.service';
-import { Task } from './task.model';
 import { CreateTaskDTO } from './dto/create-task.dto';
 import { GetTasksFilterDTO } from './dto/get-tasks-filter.dto';
 import { UpdateTaskStatusDTO } from './dto/update-task-status.dto';
+import { Task } from './task.entity';
 
 @Controller('tasks')
 export class TasksController {
@@ -17,11 +17,10 @@ export class TasksController {
      * @returns Tasks[] tasks
      */
     @Get()
-    public getTasks(@Query() filterDTO: GetTasksFilterDTO): Task[] {
+    public getTasks(@Query() filterDTO: GetTasksFilterDTO): Promise<Task[]> {
         if (Object.keys(filterDTO).length) {
             return this.tasksService.getTasksWithFilter(filterDTO);
         }
-
         return this.tasksService.getAllTasks();
     }
 
@@ -29,8 +28,8 @@ export class TasksController {
      * fetchSingleTask
      */
     @Get('/:id')
-    public fetchSingleTask(@Param('id') id: string): Task {
-        const found = this.tasksService.getTask(id);
+    public fetchSingleTask(@Param('id') id: string): Promise<Task> {
+        const found = this.tasksService.getTask(id)
         if (!found) {
             throw new NotFoundException(`Task with ID ${id} not found.`);
         }
@@ -43,7 +42,7 @@ export class TasksController {
      */
     @Post()
     @HttpCode(201)
-    public createTask(@Body() createTaskDTO: CreateTaskDTO): Task {
+    public createTask(@Body() createTaskDTO: CreateTaskDTO): Promise<Task> {
         const newTask = this.tasksService.createTask(createTaskDTO);
         return newTask;
     }
@@ -53,12 +52,8 @@ export class TasksController {
      */
     @Delete('/:id')
     @HttpCode(204)
-    public deleteSingleTask(@Param('id') id: string): void {
-        const found = this.tasksService.getTask(id);
-        if (!found) {
-            throw new NotFoundException(`Task with ID ${id} not found.`);
-        }
-        this.tasksService.deleteTask(id);
+    public deleteSingleTask(@Param('id') id: string): Promise<void> {
+        return this.tasksService.deleteTask(id);
     }
 
     @Patch('/:id/status')
@@ -66,7 +61,7 @@ export class TasksController {
     public patchTaskStatus(
         @Param('id') id: string,
         @Body() updateTaskStatusDTO: UpdateTaskStatusDTO
-    ): Task {
+    ): Promise<Task> {
         const { status } = updateTaskStatusDTO;
         return this.tasksService.patchTask(id, 'status', status);
     }
