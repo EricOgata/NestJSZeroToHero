@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { DataSource, Repository } from "typeorm";
 import { User } from "./user.entity";
-import { AuthCredentialsDTO } from "./dto/auth-credentials.dto";
+import { AuthCredentialsSignUpDTO } from "./dto/auth-credentials-signup.dto";
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -10,7 +10,7 @@ export class UsersRepository extends Repository<User> {
         super(User, dataSource.createEntityManager());
     }
 
-    async createUser(authCredentialsDTO: AuthCredentialsDTO): Promise<void> {
+    async createUser(authCredentialsDTO: AuthCredentialsSignUpDTO): Promise<void> {
         const { username, password } = authCredentialsDTO;
         // Hash
 

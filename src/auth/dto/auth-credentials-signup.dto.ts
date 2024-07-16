@@ -1,7 +1,7 @@
 import { IsString, Matches, MaxLength, MinLength } from "class-validator";
 import { isUnique } from "src/customValidations/IsUnique/isUnique.decorator";
 
-export class AuthCredentialsDTO {
+export class AuthCredentialsSignUpDTO {
     @IsString()
     @MinLength(4)
     @MaxLength(20)
