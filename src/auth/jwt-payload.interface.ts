@@ -1,8 +1,7 @@
 export interface JWTPayload {
-    username: string;
+  username: string;
 }
 
-
 export interface JWTAccessToken {
-    accessToken: string;
+  accessToken: string;
 }

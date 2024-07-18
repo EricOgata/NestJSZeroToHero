@@ -9,26 +9,29 @@ import { JWTAccessToken, JWTPayload } from './jwt-payload.interface';
 
 @Injectable()
 export class AuthService {
+  constructor(
+    @InjectRepository(UsersRepository)
+    private usersRepository: UsersRepository,
+    private jwtService: JwtService,
+  ) {}
 
-    constructor(
-        @InjectRepository(UsersRepository)
-        private usersRepository: UsersRepository,
-        private jwtService: JwtService,
-    ) { }
+  public async signUp(
+    authCredentialsDTO: AuthCredentialsSignUpDTO,
+  ): Promise<void> {
+    return this.usersRepository.createUser(authCredentialsDTO);
+  }
 
-    public async signUp(authCredentialsDTO: AuthCredentialsSignUpDTO): Promise<void> {
-        return this.usersRepository.createUser(authCredentialsDTO);
+  public async signIn(
+    authCredentialsDTO: AuthCredentialsSignInDTO,
+  ): Promise<JWTAccessToken> {
+    const { username, password } = authCredentialsDTO;
+    const user = await this.usersRepository.findOneBy({ username });
+
+    if (user && (await bcrypt.compare(password, user.password))) {
+      const payload: JWTPayload = { username };
+      const accessToken = this.jwtService.sign(payload);
+      return { accessToken };
     }
-
-    public async signIn(authCredentialsDTO: AuthCredentialsSignInDTO): Promise<JWTAccessToken> {
-        const { username, password } = authCredentialsDTO;
-        const user = await this.usersRepository.findOneBy({ username });
-
-        if (user && (await bcrypt.compare(password, user.password))) {
-            const payload: JWTPayload = { username };
-            const accessToken = this.jwtService.sign(payload);
-            return { accessToken };
-        }
-        throw new UnauthorizedException('Please check yout login credentials.')
-    }
+    throw new UnauthorizedException('Please check yout login credentials.');
+  }
 }
