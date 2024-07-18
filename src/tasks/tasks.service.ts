@@ -5,6 +5,7 @@ import { Task } from './task.entity';
 import { TasksRepository } from './tasks.repository';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Like } from 'typeorm';
+import { User } from 'src/auth/user.entity';
 
 @Injectable()
 export class TasksService {
@@ -19,10 +20,11 @@ export class TasksService {
      * @param id string
      * @returns Promise<Task> | null
      */
-    public async getTask(id: string): Promise<Task> | null {
+    public async getTask(id: string, user: User): Promise<Task> | null {
         const found = await this.taskRepository.findOneBy({
-            id
-        });
+            id,
+            user,
+        })
         if (!found) {
             throw new NotFoundException(`Task with ID "${id}" not found`)
         }
@@ -32,8 +34,8 @@ export class TasksService {
     /**
      * getTasksWithFilter
      */
-    public async getTasks(filterDTO: GetTasksFilterDTO): Promise<Task[]> {
-        return this.taskRepository.getTasks(filterDTO);
+    public async getTasks(filterDTO: GetTasksFilterDTO, user: User): Promise<Task[]> {
+        return this.taskRepository.getTasks(filterDTO, user);
     }
 
     /**
@@ -41,17 +43,18 @@ export class TasksService {
      * @param createTaskDTO 
      * @returns 
      */
-    public async createTask(createTaskDTO: CreateTaskDTO): Promise<Task> {
-        return await this.taskRepository.createTask(createTaskDTO);
+    public async createTask(createTaskDTO: CreateTaskDTO, user: User): Promise<Task> {
+        return await this.taskRepository.createTask(createTaskDTO, user);
     }
 
     /**
      * Delete Task
      * @param id id of task
      */
-    public async deleteTask(id: string): Promise<void> {
+    public async deleteTask(id: string, user: User): Promise<void> {
         const deletedRows = await this.taskRepository.softDelete({
             id,
+            user,
             deletedAt: IsNull(),
         });
         if (deletedRows.affected === 0) {
@@ -62,11 +65,13 @@ export class TasksService {
     /**
      * patchTask
      */
-    public async patchTask(id: string, param: string, value: string): Promise<Task> {
-        return await this.taskRepository.save({
-            id,
-            [param]: value,
-        });
+    public async patchTask(id: string, user, param: string, value: string): Promise<Task> {
+        const found = await this.getTask(id, user);
+        if (!found) {
+            throw new NotFoundException(`Task with ID "${id}" not found`)
+        }
+        found[param] = value;
+        return await this.taskRepository.save(found);
     }
 }
 
